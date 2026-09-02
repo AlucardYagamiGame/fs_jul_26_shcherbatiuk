@@ -59,8 +59,8 @@ export const App = () => {
                 data-cy="FilterAllUsers"
                 href="#/"
                 className={cn({ 'is-active': selectedUser === null })}
-                onClick={e => {
-                  e.preventDefault();
+                onClick={event => {
+                  event.preventDefault();
                   setSelectedUser(null);
                 }}
               >
@@ -73,8 +73,8 @@ export const App = () => {
                   data-cy="FilterUser"
                   href="#/"
                   className={cn({ 'is-active': selectedUser === user.id })}
-                  onClick={e => {
-                    e.preventDefault();
+                  onClick={event => {
+                    event.preventDefault();
                     setSelectedUser(user.id);
                   }}
                 >
@@ -133,8 +133,8 @@ export const App = () => {
                     'is-info': selectedCategories.includes(category.id),
                   })}
                   href="#/"
-                  onClick={e => {
-                    e.preventDefault();
+                  onClick={event => {
+                    event.preventDefault();
                     setSelectedCategories(prev => {
                       return prev.includes(category.id)
                         ? prev.filter(id => id !== category.id)
