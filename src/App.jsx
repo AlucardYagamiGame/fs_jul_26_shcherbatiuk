@@ -21,10 +21,39 @@ const products = productsFromServer.map(product => {
   };
 });
 
+const columns = [
+  { key: 'id', label: 'ID' },
+  { key: 'name', label: 'Product' },
+  { key: 'categoryId', label: 'Category' },
+  { key: 'user', label: 'User' },
+];
+
 export const App = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchInput, setSearchInput] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortDirection, setSortDirection] = useState(null);
+
+  const handleSort = column => {
+    if (sortColumn === column) {
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else {
+        setSortDirection(null);
+        setSortColumn(null);
+      }
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = column => {
+    if (sortColumn !== column) return 'fa-sort';
+
+    return sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+  };
 
   const filteredProducts = products.filter(product => {
     if (selectedUser && product.user?.id !== selectedUser) {
@@ -47,6 +76,26 @@ export const App = () => {
 
     return true;
   });
+
+  const getValue = product => {
+    if (sortColumn === 'id') return product.id;
+    if (sortColumn === 'name') return product.name;
+    if (sortColumn === 'categoryId') return product.category.title;
+
+    return product.user.name;
+  };
+
+  const compareProducts = (firstProduct, secondProduct) => {
+    const comparison =
+      getValue(firstProduct) > getValue(secondProduct) ? 1 : -1;
+
+    return sortDirection === 'asc' ? comparison : -comparison;
+  };
+
+  const displayedProducts =
+    sortColumn && sortDirection
+      ? [...filteredProducts].sort(compareProducts)
+      : filteredProducts;
 
   return (
     <div className="section">
@@ -161,6 +210,8 @@ export const App = () => {
                   setSelectedUser(null);
                   setSearchInput('');
                   setSelectedCategories([]);
+                  setSortColumn(null);
+                  setSortDirection(null);
                 }}
               >
                 Reset all filters
@@ -182,54 +233,32 @@ export const App = () => {
             >
               <thead>
                 <tr>
-                  <th>
-                    <span className="is-flex is-flex-wrap-nowrap">
-                      ID
-                      <a href="#/">
-                        <span className="icon">
-                          <i data-cy="SortIcon" className="fas fa-sort" />
+                  {columns.map(column => (
+                    <th key={column.key}>
+                      <a
+                        href="#/"
+                        onClick={e => {
+                          e.preventDefault();
+                          handleSort(column.key);
+                        }}
+                      >
+                        <span className="is-flex is-flex-wrap-nowrap">
+                          {column.label}
+                          <span className="icon">
+                            <i
+                              data-cy="SortIcon"
+                              className={`fas ${getSortIcon(column.key)}`}
+                            />
+                          </span>
                         </span>
                       </a>
-                    </span>
-                  </th>
-
-                  <th>
-                    <span className="is-flex is-flex-wrap-nowrap">
-                      Product
-                      <a href="#/">
-                        <span className="icon">
-                          <i data-cy="SortIcon" className="fas fa-sort-down" />
-                        </span>
-                      </a>
-                    </span>
-                  </th>
-
-                  <th>
-                    <span className="is-flex is-flex-wrap-nowrap">
-                      Category
-                      <a href="#/">
-                        <span className="icon">
-                          <i data-cy="SortIcon" className="fas fa-sort-up" />
-                        </span>
-                      </a>
-                    </span>
-                  </th>
-
-                  <th>
-                    <span className="is-flex is-flex-wrap-nowrap">
-                      User
-                      <a href="#/">
-                        <span className="icon">
-                          <i data-cy="SortIcon" className="fas fa-sort" />
-                        </span>
-                      </a>
-                    </span>
-                  </th>
+                    </th>
+                  ))}
                 </tr>
               </thead>
 
               <tbody>
-                {filteredProducts.map(product => (
+                {displayedProducts.map(product => (
                   <tr data-cy="Product" key={product.id}>
                     <td className="has-text-weight-bold" data-cy="ProductId">
                       {product.id}
